@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AnimatePresence,
@@ -18,6 +18,13 @@ import {
 } from "@/components/ui/icons";
 import { CaseStudyContent } from "./CaseStudyContent";
 import { CaseStudyCardFace } from "./CaseStudyCardFace";
+
+// transitions-dev 08 — page side-by-side tokens (see globals.css :root)
+const PAGE_SLIDE_MS = 250;
+const PAGE_SLIDE_S = PAGE_SLIDE_MS / 1000;
+const PAGE_SLIDE_DIST = 8;
+const PAGE_BLUR = 3;
+const PAGE_EASE = [0.22, 1, 0.36, 1] as const;
 
 export function CaseStudyOverlay({
   studies,
@@ -39,6 +46,9 @@ export function CaseStudyOverlay({
   onNav: (dir: 1 | -1) => void;
 }) {
   const reduce = useReducedMotion();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const navBusyRef = useRef(false);
+  const scrollAnimRef = useRef<ReturnType<typeof animate> | null>(null);
   const study = studies[index];
   // Two-phase close: content fades DOWN first, then we unmount (which triggers
   // the hero's layoutId morph back to the grid).
@@ -60,19 +70,64 @@ export function CaseStudyOverlay({
   const heroX = useMotionValue(0);
   useEffect(() => {
     if (dir === 0 || reduce) return;
-    heroX.set(dir > 0 ? 56 : -56);
+    heroX.set(dir > 0 ? PAGE_SLIDE_DIST : -PAGE_SLIDE_DIST);
     const controls = animate(heroX, 0, {
-      duration: 0.42,
-      ease: [0.22, 1, 0.36, 1],
+      duration: PAGE_SLIDE_S,
+      ease: PAGE_EASE,
     });
     return () => controls.stop();
   }, [index, dir, reduce, heroX]);
 
+  // When scrolled down, animate scroll to top first, then fire nav so the slide
+  // animation runs only after the overlay is back at the top.
+  const handleNav = useCallback(
+    (d: 1 | -1) => {
+      if (navBusyRef.current) return;
+
+      const el = scrollRef.current;
+      if (!el) return;
+
+      const scrolled = el.scrollTop > 1;
+
+      if (!scrolled) {
+        onNav(d);
+        return;
+      }
+
+      navBusyRef.current = true;
+      scrollAnimRef.current?.stop();
+
+      if (reduce) {
+        el.scrollTop = 0;
+        onNav(d);
+        navBusyRef.current = false;
+        return;
+      }
+
+      const startScroll = el.scrollTop;
+      scrollAnimRef.current = animate(startScroll, 0, {
+        duration: PAGE_SLIDE_S,
+        ease: PAGE_EASE,
+        onUpdate: (v) => {
+          el.scrollTop = v;
+        },
+        onComplete: () => {
+          onNav(d);
+          navBusyRef.current = false;
+          scrollAnimRef.current = null;
+        },
+      });
+    },
+    [onNav, reduce]
+  );
+
+  useEffect(() => () => scrollAnimRef.current?.stop(), []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleClose();
-      if (e.key === "ArrowRight") onNav(1);
-      if (e.key === "ArrowLeft") onNav(-1);
+      if (e.key === "ArrowRight") handleNav(1);
+      if (e.key === "ArrowLeft") handleNav(-1);
     };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -81,13 +136,14 @@ export function CaseStudyOverlay({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [handleClose, onNav]);
+  }, [handleClose, handleNav]);
 
   return createPortal(
     // Root is a motion component (with no exit of its own) so AnimatePresence
     // keeps the subtree mounted while the nested scrim/chrome/content fade out
     // and the hero morphs back — the hero itself never fades.
     <motion.div
+      ref={scrollRef}
       className="fixed inset-0 z-[100] overflow-y-auto"
       initial={false}
       role="dialog"
@@ -116,7 +172,7 @@ export function CaseStudyOverlay({
             scrolling underneath fades out instead of cutting off hard. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-canvas from-40% to-transparent"
+          className="case-study-header-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-28"
         />
         <IconButton variant="ghost" aria-label="Close" onClick={handleClose}>
           <CloseIcon size={18} />
@@ -125,7 +181,7 @@ export function CaseStudyOverlay({
           <IconButton
             variant="ghost"
             aria-label="Previous case study"
-            onClick={() => onNav(-1)}
+            onClick={() => handleNav(-1)}
           >
             <ArrowLeftIcon size={18} />
           </IconButton>
@@ -135,7 +191,7 @@ export function CaseStudyOverlay({
           <IconButton
             variant="ghost"
             aria-label="Next case study"
-            onClick={() => onNav(1)}
+            onClick={() => handleNav(1)}
           >
             <ArrowRightIcon size={18} />
           </IconButton>
@@ -170,7 +226,11 @@ export function CaseStudyOverlay({
                 ? { opacity: 0 }
                 : dir === 0
                   ? { opacity: 0, y: 24 }
-                  : { opacity: 0, x: dir > 0 ? 44 : -44 },
+                  : {
+                      opacity: 0,
+                      x: dir > 0 ? PAGE_SLIDE_DIST : -PAGE_SLIDE_DIST,
+                      filter: `blur(${PAGE_BLUR}px)`,
+                    },
             animate: ({
               dir,
               closing,
@@ -188,28 +248,33 @@ export function CaseStudyOverlay({
                     opacity: 1,
                     x: 0,
                     y: 0,
+                    filter: "blur(0px)",
                     transition:
                       dir === 0
                         ? {
                             duration: 0.45,
-                            ease: [0.22, 1, 0.36, 1],
+                            ease: PAGE_EASE,
                             delay: reduce ? 0 : 0.35,
                           }
-                        : { duration: 0.34, ease: [0.22, 1, 0.36, 1] },
+                        : {
+                            duration: PAGE_SLIDE_S,
+                            ease: PAGE_EASE,
+                          },
                   },
             exit: ({ dir }: { dir: number }) =>
               reduce
                 ? { opacity: 0, transition: { duration: 0.15 } }
                 : {
                     opacity: 0,
-                    x: dir > 0 ? -44 : 44,
-                    transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+                    x: dir > 0 ? -PAGE_SLIDE_DIST : PAGE_SLIDE_DIST,
+                    filter: `blur(${PAGE_BLUR}px)`,
+                    transition: { duration: PAGE_SLIDE_S, ease: [0.4, 0, 1, 1] },
                   },
           }}
           initial="initial"
           animate="animate"
           exit="exit"
-          style={{ willChange: "transform, opacity" }}
+          style={{ willChange: "transform, opacity, filter" }}
         >
           <CaseStudyContent study={study} />
         </motion.section>

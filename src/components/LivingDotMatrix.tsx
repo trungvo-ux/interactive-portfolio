@@ -178,7 +178,7 @@ export function LivingDotMatrix() {
             }
           }
 
-          const opacity = 0.05 + brightness * 0.95;
+          const opacity = Math.min(1, (0.05 + brightness * 0.95) * 1.1);
           const size = DOT * (0.6 + brightness * 0.7);
           const x = col * CELL;
           const y = row * CELL;

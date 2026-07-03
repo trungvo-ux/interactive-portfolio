@@ -57,6 +57,16 @@
   --panel-translate-y: 100px;
   --panel-blur: 2px;
   --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* page side-by-side (transitions-dev 08) */
+  --page-slide-dur: 250ms;
+  --page-fade-dur: 250ms;
+  --page-slide-distance: 8px;
+  --page-blur: 3px;
+  --page-stagger: 0ms;
+  --page-exit-enabled: 1;
+  --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
@@ -192,15 +202,6 @@ body::-webkit-scrollbar,
   text-wrap: balance;
 }
 
-/* Per-glyph dot mask — matches the LivingDotMatrix field's dither language
-   so the headline reads as stippled rather than a solid fill. */
-.dither-char {
-  mask-image: radial-gradient(circle, black 1.15px, transparent 1.35px);
-  -webkit-mask-image: radial-gradient(circle, black 1.15px, transparent 1.35px);
-  mask-size: 3.4px 3.4px;
-  -webkit-mask-size: 3.4px 3.4px;
-}
-
 .dither-socials a {
   display: inline-flex;
   height: 18px;
@@ -224,6 +225,15 @@ body::-webkit-scrollbar,
   width: 18px;
 }
 
+/* Case study overlay sticky header fade — iOS Safari treats `transparent`
+   in color gradients as rgba(0,0,0,0), producing a grey/dirty scrim.
+   Solid canvas + alpha mask fades correctly on mobile Safari. */
+.case-study-header-fade {
+  background-color: var(--canvas);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .t-stagger > *,
   .stamp {
@@ -233,6 +243,9 @@ body::-webkit-scrollbar,
     transform: none !important;
   }
   .t-panel-slide {
+    transition: none !important;
+  }
+  .t-page-slide .t-page {
     transition: none !important;
   }
 }
