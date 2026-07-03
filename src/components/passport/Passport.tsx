@@ -8,6 +8,7 @@ import { StampCanvasPage } from "./StampCanvasPage";
 import { IconButton } from "@/components/ui/IconButton";
 import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 import { playSound } from "@/lib/sound";
+import { PALETTE_PASSPORT_OPEN } from "@/lib/palette-events";
 
 const COVER_ASPECT = 439 / 300; // height / width
 const BASE_W = 300; // internal layout width (kept crisp, then uniformly scaled)
@@ -79,6 +80,17 @@ export function Passport() {
     if (!open) setMobilePage(0);
   }, [open]);
 
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen((current) => {
+        if (!current) playSound("/sounds/turnpaper.mp3", 0.55, 0.3);
+        return true;
+      });
+    };
+    window.addEventListener(PALETTE_PASSPORT_OPEN, onOpen);
+    return () => window.removeEventListener(PALETTE_PASSPORT_OPEN, onOpen);
+  }, []);
+
   const onMove = (e: React.PointerEvent) => {
     if (reduce || open) return;
     const el = wrapRef.current;
@@ -125,7 +137,11 @@ export function Passport() {
   }, [open]);
 
   return (
-    <div ref={outerRef} className="relative mx-auto flex flex-col items-center">
+    <div
+      id="passport"
+      ref={outerRef}
+      className="relative mx-auto flex flex-col items-center"
+    >
       <div
         className="relative flex justify-center"
         style={{

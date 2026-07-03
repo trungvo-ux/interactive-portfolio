@@ -234,6 +234,21 @@ body::-webkit-scrollbar,
   mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
 }
 
+/* Hidden command palette easter egg — brief accent pulse on `make it pop`. */
+@keyframes palette-accent-pulse {
+  0%,
+  100% {
+    --accent: #0066cc;
+  }
+  50% {
+    --accent: #2997ff;
+  }
+}
+
+html.palette-accent-pulse {
+  animation: palette-accent-pulse 900ms var(--ease-smooth);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .t-stagger > *,
   .stamp {

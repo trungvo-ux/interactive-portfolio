@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { IconButton } from "@/components/ui/IconButton";
 import { HomeIcon, UserIcon, SearchIcon } from "@/components/ui/icons";
+import { dispatchSearchTap } from "@/lib/palette-events";
 
 type Tab = "home" | "about" | "search";
 
@@ -35,7 +36,11 @@ export function FloatingNav() {
           variant={active === "search" ? "navActive" : "nav"}
           aria-label="Search"
           aria-current={active === "search"}
-          onClick={() => setActive("search")}
+          silent
+          onClick={() => {
+            setActive("search");
+            dispatchSearchTap();
+          }}
         >
           <SearchIcon size={18} />
         </IconButton>
