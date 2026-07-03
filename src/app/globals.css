@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design tokens — Apple-minimal system (Trung Vo portfolio)
+   ============================================================ */
+:root {
+  /* Surfaces */
+  --canvas: #ffffff;
+  --parchment: #f2f2f7;
+  --tile-dark: #272729;
+  --black: #000000;
+
+  /* Text */
+  --ink: #1d1d1f;
+  --muted: #727272;
+  --muted-2: #7a7a7a;
+
+  /* Accent (single interactive color) */
+  --accent: #0066cc;
+  --accent-on-dark: #2997ff;
+
+  /* Nav glass */
+  --nav-glass: rgba(116, 116, 128, 0.08);
+  --nav-chip: #ebebeb;
+
+  /* Hairline / dividers */
+  --hairline: #e0e0e0;
+
+  /* The one product shadow in the system */
+  --product-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+
+  /* ---- Passport ---- */
+  --passport-cover: #0a0a0a;
+  --passport-cover-2: #16161a;
+  --passport-page: #f5f4f0;
+  --passport-page-line: rgba(29, 29, 31, 0.06);
+  --passport-ink: #2a2a2c;
+  --stamp-purple: #7a4d6b;
+  --stamp-blue: #3a5a9a;
+  --stamp-red: #9a3b3b;
+  --stamp-green: #3b6b52;
+
+  /* ---- transitions-dev motion tokens (subset used) ---- */
+  --dur-quick: 150ms;
+  --dur-fast: 250ms;
+  --dur-slow: 400ms;
+  --dur-vslow: 500ms;
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io: ease-in-out;
+  --stagger: 40ms;
+  --reveal-distance: 12px;
+  --reveal-blur: 3px;
+
+  /* panel reveal (transitions-dev 07) */
+  --panel-open-dur: 400ms;
+  --panel-close-dur: 350ms;
+  --panel-translate-y: 100px;
+  --panel-blur: 2px;
+  --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-parchment: var(--parchment);
+  --color-tile-dark: var(--tile-dark);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-accent: var(--accent);
+  --color-accent-on-dark: var(--accent-on-dark);
+  --color-hairline: var(--hairline);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-card: 24px;
+  --radius-pill: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Borderless scroll — hide scrollbars everywhere while keeping scroll working */
+html,
+body,
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / old Edge */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome / Safari / Edge */
+  width: 0;
+  height: 0;
+}
+
+/* ============================================================
+   texts-reveal (transitions-dev 18) — staggered blurred rise
+   ============================================================ */
+.t-stagger > * {
+  opacity: 0;
+  filter: blur(var(--reveal-blur));
+  transform: translateY(var(--reveal-distance));
+  animation: t-reveal var(--dur-vslow) var(--ease-io) forwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+@keyframes t-reveal {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Stamp press-in — ink lands on the page
+   ============================================================ */
+@keyframes stamp-press {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--rot, 0deg)) scale(1.35);
+  }
+  60% {
+    opacity: 0.72;
+    transform: rotate(var(--rot, 0deg)) scale(0.97);
+  }
+  100% {
+    opacity: 0.68;
+    transform: rotate(var(--rot, 0deg)) scale(1);
+  }
+}
+
+/* ============================================================
+   Panel reveal (transitions-dev 07) — pages ease up from the
+   bottom with a cross-blur, instead of only being revealed by
+   the book's width-clip.
+   ============================================================ */
+.t-panel-slide {
+  transform: translateY(var(--panel-translate-y));
+  opacity: 0;
+  filter: blur(var(--panel-blur));
+  pointer-events: none;
+  transition:
+    transform var(--panel-close-dur) var(--panel-ease),
+    opacity var(--panel-close-dur) var(--panel-ease),
+    filter var(--panel-close-dur) var(--panel-ease);
+  will-change: transform, opacity, filter;
+}
+.t-panel-slide[data-open="true"] {
+  transform: translateY(0);
+  opacity: 1;
+  filter: blur(0);
+  pointer-events: auto;
+  transition:
+    transform var(--panel-open-dur) var(--panel-ease),
+    opacity var(--panel-open-dur) var(--panel-ease),
+    filter var(--panel-open-dur) var(--panel-ease);
+}
+
+/* Faint dotted watermark grid for passport pages */
+.passport-watermark {
+  background-image:
+    radial-gradient(var(--passport-page-line) 1px, transparent 1px),
+    linear-gradient(45deg, transparent 48%, rgba(29, 29, 31, 0.025) 49%, rgba(29, 29, 31, 0.025) 51%, transparent 52%);
+  background-size:
+    22px 22px,
+    34px 34px;
+}
+
+/* Footer-only dithered motion wave transition */
+.dither-footer {
+  isolation: isolate;
+}
+
+.dither-title {
+  text-wrap: balance;
+}
+
+/* Per-glyph dot mask — matches the LivingDotMatrix field's dither language
+   so the headline reads as stippled rather than a solid fill. */
+.dither-char {
+  mask-image: radial-gradient(circle, black 1.15px, transparent 1.35px);
+  -webkit-mask-image: radial-gradient(circle, black 1.15px, transparent 1.35px);
+  mask-size: 3.4px 3.4px;
+  -webkit-mask-size: 3.4px 3.4px;
+}
+
+.dither-socials a {
+  display: inline-flex;
+  height: 18px;
+  width: 18px;
+  align-items: center;
+  justify-content: center;
+  color: rgba(29, 29, 31, 0.52);
+  transition:
+    color var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-smooth);
+}
+
+.dither-socials a:hover,
+.dither-socials a:focus-visible {
+  color: rgba(29, 29, 31, 0.9);
+  transform: translateY(-1px);
+}
+
+.dither-socials svg {
+  height: 18px;
+  width: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-stagger > *,
+  .stamp {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  .t-panel-slide {
+    transition: none !important;
+  }
+}
