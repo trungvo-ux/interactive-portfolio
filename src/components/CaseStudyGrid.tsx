@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { caseStudies } from "@/lib/case-studies";
+import { PALETTE_OPEN_CASE } from "@/lib/palette-events";
 import { CaseStudyCard } from "./CaseStudyCard";
 import { CaseStudyOverlay } from "./CaseStudyOverlay";
 
@@ -50,12 +51,21 @@ export function CaseStudyGrid() {
 
   // Opening a card is a real navigation — push a new history entry so back
   // returns to the grid.
-  const open = (slug: string) => {
+  const open = useCallback((slug: string) => {
     setBySlug(slug, 0);
     window.setTimeout(() => {
       window.history.pushState({ case: slug }, "", `?case=${slug}`);
     }, 0);
-  };
+  }, [setBySlug]);
+
+  useEffect(() => {
+    const onPaletteOpen = (e: Event) => {
+      const slug = (e as CustomEvent<{ slug: string }>).detail?.slug;
+      if (slug) open(slug);
+    };
+    window.addEventListener(PALETTE_OPEN_CASE, onPaletteOpen);
+    return () => window.removeEventListener(PALETTE_OPEN_CASE, onPaletteOpen);
+  }, [open]);
 
   const close = () => {
     setView({ index: null, dir: 0, opened: null });

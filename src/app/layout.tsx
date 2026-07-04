@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { FloatingNav } from "@/components/FloatingNav";
+import { CommandPalette } from "@/components/CommandPalette";
 
 const siteUrl = "https://portfolio-apple-eight.vercel.app";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
     >
       <body>
         <FloatingNav />
+        <CommandPalette />
         {children}
       </body>
     </html>
