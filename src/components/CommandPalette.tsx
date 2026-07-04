@@ -266,18 +266,18 @@ export function CommandPalette() {
             transition={{ duration: reduce ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="border-b border-hairline px-4 py-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
+              <p className="text-[12px] font-medium tracking-[-0.24px] text-muted">
                 {unlockMethod === "search"
-                  ? "search × 5 — access granted"
+                  ? "Search × 5 — access granted"
                   : unlockMethod === "tv"
                     ? ".tv — welcome"
-                    : "console"}
+                    : "Console"}
               </p>
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="type a command…"
+                placeholder="Type a command…"
                 aria-label="Command filter"
                 autoComplete="off"
                 spellCheck={false}
@@ -287,14 +287,14 @@ export function CommandPalette() {
 
             <div ref={listRef} className="max-h-[min(50vh,320px)] overflow-y-auto px-2 py-2">
               {flatFiltered.length === 0 ? (
-                <p className="px-3 py-6 text-center text-[14px] text-muted">
+                <p className="px-3 py-6 text-center text-[14px] tracking-[-0.28px] text-muted">
                   No matches. Try &ldquo;passport&rdquo;, &ldquo;watsonx&rdquo;, or{" "}
-                  <span className="font-mono text-[12px]">sudo hire trung</span>.
+                  <span className="text-ink">sudo hire trung</span>.
                 </p>
               ) : (
                 groups.map((group) => (
                   <div key={group.section} className="mb-1">
-                    <p className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-2">
+                    <p className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-2">
                       {group.label}
                     </p>
                     <ul>
@@ -319,7 +319,7 @@ export function CommandPalette() {
                               {cmd.hint && (
                                 <span
                                   className={cn(
-                                    "truncate font-mono text-[10px] uppercase tracking-[0.12em]",
+                                    "truncate text-[12px] tracking-[-0.24px]",
                                     active ? "text-white/75" : "text-muted-2"
                                   )}
                                 >
@@ -338,11 +338,11 @@ export function CommandPalette() {
 
             <div className="border-t border-hairline px-4 py-2.5">
               {toast ? (
-                <p className="font-mono text-[11px] leading-relaxed tracking-[0.06em] text-accent">
+                <p className="text-[14px] leading-relaxed tracking-[-0.28px] text-accent">
                   {toast}
                 </p>
               ) : (
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-2">
+                <p className="text-[12px] tracking-[-0.24px] text-muted-2">
                   ↑↓ navigate · ↵ run · esc dismiss
                 </p>
               )}
